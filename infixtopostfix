@@ -1,0 +1,173 @@
+#include <iostream>
+#include <string>
+#include <queue>
+// The most complex way to build a convertor
+// I'm sorry this looks so complicated but I've been sick and 
+// doing this was bonus pain
+
+const std::string I2PConvertor(const std::string fixed) {
+	std::queue<char> first;
+	std::queue<char> second;
+	std::string result;
+	int i = 0;
+	int l = fixed.size();
+
+	// here we take each value and and store it in a queue
+	while (i < l)
+	{
+		if (fixed.at(i) == '*' || fixed.at(i) == '+' || fixed.at(i) == '-' || fixed.at(i) == '/' 
+			|| fixed.at(i) == '(')
+		{
+			// here we store operators
+			second.push(fixed.at(i));
+		}
+		else
+		{
+			// here we store operands
+			first.push(fixed.at(i));
+		}
+
+		i++;
+	}
+	
+	if (first.size() == 3)
+	{
+		// here if we have 3 values then we implement 
+		auto cs = second.front();
+		second.pop();
+		if (cs == '*')
+		{
+			// here we manually turn the inFix to postfix 
+			// by setting the order manually
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(cs);
+			result.push_back(first.front());
+			result.push_back(second.front());
+			second.pop();
+		}
+		else if (cs == '(')
+		{
+			// here we check for parantheses and remove those then
+			// manually change the infix to postfix
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(second.front());
+			second.pop();
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(second.front());
+			second.pop();
+		}
+		else
+		{
+			//here if it's just normal with no parentheses, we have a normal conversion
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(first.front());
+			first.pop();
+			result.push_back(cs);
+			result.push_back(second.front());
+			second.pop();
+		}
+	}
+	else
+	{
+		// here we stop the loop as soon as the first queue is empty
+		while (!first.empty())
+		{
+			// here we manually change the first two operands we get
+			if (result.empty())
+				{
+					auto cs = second.front();
+					second.pop();
+
+					if (cs == '(')
+					{
+						// here we check if it the first char in the equation is
+						// a parentheses and remove it 
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(second.front());
+						second.pop();
+					}
+					else
+					{
+						// here we do the conversion normally
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(cs);
+					}
+
+				}
+			else
+				{
+					// here we finish the infix to postfix
+					auto cs = second.front();
+					second.pop();
+					
+					if (second.size() > 1)
+					{
+						if (cs == '+' && second.front() == '(' || cs == '-' && second.front() == '('
+							|| cs == '*' && second.front() == '(' || cs == '/' && second.front() == '(')
+						{
+							second.pop();
+							result.push_back(first.front());
+							first.pop();
+							result.push_back(first.front());
+							first.pop();
+							result.push_back(second.front());
+							second.pop();
+							result.push_back(cs);
+						}
+					}
+					else if (cs == '(')
+					{
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(second.front());
+						//second.pop();
+					}
+					else
+					{
+						result.push_back(first.front());
+						first.pop();
+						result.push_back(cs);
+					}
+
+				}
+		}
+	}
+	
+	
+
+	return result;
+}
+
+int main() {
+	std::string infix1{ "a*b+c" };
+	std::string infix2{ "a-b*c" };
+	std::string infix3{ "(a+b)/c" };
+	std::string infix4{ "(a+b)*(c-d)" };
+	// expected: ab*c+
+	std::cout << I2PConvertor(infix1) << std::endl;
+	// expected: abc*-
+	std::cout << I2PConvertor(infix2) << std::endl;
+	// expected: ab+c/
+	std::cout << I2PConvertor(infix3) << std::endl;
+	// expected: ab+cd-*
+	std::cout << I2PConvertor(infix4) << std::endl;
+	return 0;
+}
